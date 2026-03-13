@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package wallet;
+
+option go_package = "github.com/bestplay/wallet-service/internal/proto;walletpb";
+
+service WalletService {
+  rpc CreateWallet(CreateWalletRequest) returns (Wallet);
+  rpc GetWallet(GetWalletRequest) returns (Wallet);
+  rpc Transfer(TransferRequest) returns (TransferResponse);
+  rpc Recharge(RechargeRequest) returns (RechargeResponse);
+}
+
+message CreateWalletRequest {}
+
+message GetWalletRequest {
+  string id = 1;
+}
+
+message Wallet {
+  string id = 1;
+  string balance = 2;
+}
+
+message TransferRequest {
+  string source_id = 1;
+  string dest_id = 2;
+  string amount = 3;
+}
+
+message TransferResponse {
+  string status = 1;
+}
+
+message RechargeRequest {
+  string wallet_id = 1;
+  string amount = 2;
+}
+
+message RechargeResponse {
+  string status = 1;
+}
