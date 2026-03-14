@@ -12,6 +12,7 @@ import (
 	"github.com/bestplay/wallet-service/internal/store"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -62,6 +63,8 @@ func main() {
 		}
 		s := grpc.NewServer()
 		walletpb.RegisterWalletServiceServer(s, grpcHandler)
+		// Enable reflection
+		reflection.Register(s)
 		log.Println("gRPC server starting on :50051")
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("gRPC server failed: %v", err)

@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   mysql:
     image: mysql:8.0
@@ -18,14 +20,65 @@ services:
     networks:
       - wallet-network
 
-  wallet-service:
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile
-    container_name: wallet-service
+  nginx:
+    image: nginx:alpine
+    container_name: wallet-nginx
     ports:
       - "8080:8080"
       - "50051:50051"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - wallet-service-1
+      - wallet-service-2
+      - wallet-service-3
+    restart: unless-stopped
+    networks:
+      - wallet-network
+
+  wallet-service-1:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: wallet-service-1
+    environment:
+      STORE_TYPE: "mysql"
+      MYSQL_HOST: "mysql"
+      MYSQL_PORT: "3306"
+      MYSQL_USER: "walletuser"
+      MYSQL_PASSWORD: "walletpassword"
+      MYSQL_DATABASE: "wallet"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - wallet-network
+
+  wallet-service-2:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: wallet-service-2
+    environment:
+      STORE_TYPE: "mysql"
+      MYSQL_HOST: "mysql"
+      MYSQL_PORT: "3306"
+      MYSQL_USER: "walletuser"
+      MYSQL_PASSWORD: "walletpassword"
+      MYSQL_DATABASE: "wallet"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - wallet-network
+
+  wallet-service-3:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: wallet-service-3
     environment:
       STORE_TYPE: "mysql"
       MYSQL_HOST: "mysql"
