@@ -15,12 +15,12 @@
 
 ```bash
 # 运行所有测试
-go test ./test/integration -v
+go test ./test -v
 
 # 运行特定测试
-go test ./test/integration -run TestWalletConcurrency -v
-go test ./test/integration -run TestRechargeConcurrency -v
-go test ./test/integration -run TestTransferConcurrency -v
+go test ./test -run TestWalletConcurrency -v
+go test ./test -run TestRechargeConcurrency -v
+go test ./test -run TestTransferConcurrency -v
 ```
 
 ### 测试用例说明
@@ -37,7 +37,8 @@ go test ./test/integration -run TestTransferConcurrency -v
 3. **TestTransferConcurrency**
    - 测试从源钱包到目标钱包 100 次并发转账
    - 每次转账 10.0 单位
-   - 验证源钱包和目标钱包余额变化正确
+   - 源钱包初始余额 10000.0，目标钱包初始余额 0
+   - 验证源钱包最终余额 9000.0，目标钱包最终余额 1000.0
 
 ---
 
@@ -63,7 +64,8 @@ go test ./test/integration -run TestTransferConcurrency -v
 ### 运行测试
 
 ```bash
-cd test/loadtest
+# 启动服务后
+cd test
 k6 run k6-test.js
 ```
 
@@ -85,9 +87,8 @@ k6 run k6-test.js
 每个虚拟用户随机执行以下操作之一：
 
 1. **创建钱包** (30% 概率)
-2. **查询钱包** (20% 概率)
-3. **充值** (25% 概率)
-4. **转账** (25% 概率)
+2. **查询钱包** (50% 概率)
+3. **转账** (20% 概率)
 
 ### 自定义测试配置
 
@@ -97,7 +98,7 @@ k6 run k6-test.js
 export const options = {
   stages: [
     { duration: '30s', target: 20 },    // 30秒内增加到20个用户
-    { duration: '1m', target: 50 },     // 1分钟内增加到50个用户
+    { duration: '1m', target: 50 },     // 1分钟内保持50个用户
     { duration: '30s', target: 0 },      // 30秒内减少到0个用户
   ],
   thresholds: {

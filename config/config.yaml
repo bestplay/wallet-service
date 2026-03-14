@@ -1,0 +1,8 @@
+store:
+  type: "memory"
+  mysql:
+    host: "localhost"
+    port: 3306
+    user: "walletuser"
+    password: "walletpassword"
+    database: "wallet"

@@ -1,0 +1,48 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: wallet-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: wallet
+      MYSQL_USER: walletuser
+      MYSQL_PASSWORD: walletpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - wallet-network
+
+  wallet-service:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: wallet-service
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      STORE_TYPE: "mysql"
+      MYSQL_HOST: "mysql"
+      MYSQL_PORT: "3306"
+      MYSQL_USER: "walletuser"
+      MYSQL_PASSWORD: "walletpassword"
+      MYSQL_DATABASE: "wallet"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - wallet-network
+
+networks:
+  wallet-network:
+    driver: bridge
+
+volumes:
+  mysql-data:

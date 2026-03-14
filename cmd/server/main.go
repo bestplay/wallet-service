@@ -5,6 +5,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/bestplay/wallet-service/internal/config"
 	"github.com/bestplay/wallet-service/internal/handler"
 	walletpb "github.com/bestplay/wallet-service/internal/proto"
 	"github.com/bestplay/wallet-service/internal/service"
@@ -14,7 +15,26 @@ import (
 )
 
 func main() {
-	storeInstance := store.NewMemoryStore()
+	cfg, err := config.Load("config/config.yaml")
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	var storeInstance store.Store
+	switch cfg.Store.Type {
+	case "mysql":
+		log.Println("Using MySQL store")
+		storeInstance, err = store.NewGormMySQLStore(cfg.Store.MySQL.DSN())
+		if err != nil {
+			log.Fatalf("Failed to create MySQL store: %v", err)
+		}
+	case "memory":
+		fallthrough
+	default:
+		log.Println("Using memory store")
+		storeInstance = store.NewMemoryStore()
+	}
+
 	svc := service.NewService(storeInstance)
 
 	restHandler := handler.NewHandler(svc)
